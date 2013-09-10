@@ -14,6 +14,7 @@ module ActsAsTaggableOn
     belongs_to :tag, :class_name => 'ActsAsTaggableOn::Tag'
     belongs_to :taggable, :polymorphic => true
     belongs_to :tagger,   :polymorphic => true
+    belongs_to :organization
 
     validates_presence_of :context
     validates_presence_of :tag_id
