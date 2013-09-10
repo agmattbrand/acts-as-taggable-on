@@ -60,10 +60,12 @@ module ActsAsTaggableOn::Taggable
         cache[owner] ||= ActsAsTaggableOn::TagList.new(*owner_tags_on(owner, context).map(&:name))
       end
       
-      def set_owner_tag_list_on(owner, context, new_list)
+      def set_owner_tag_list_on(owner, context, new_list, organization_id)
         add_custom_context(context)
-        
+        add_organization_id(organization_id)
+
         cache = cached_owned_tag_list_on(context)
+        # cache.delete_if { |key, value| key.id == owner.id && key.class == owner.class } 
 
         cache[owner] = ActsAsTaggableOn::TagList.from(new_list)
       end
@@ -113,7 +115,7 @@ module ActsAsTaggableOn::Taggable
             if old_tags.present?
               old_taggings = ActsAsTaggableOn::Tagging.where(:taggable_id => id, :taggable_type => self.class.base_class.to_s,
                                                              :tagger_type => owner.class.base_class.to_s, :tagger_id => owner.id,
-                                                             :tag_id => old_tags, :context => context)
+                                                             :tag_id => old_tags, :organization_id => organization_id, :context => context)
             end
           
             # Destroy old taggings:
@@ -123,7 +125,7 @@ module ActsAsTaggableOn::Taggable
 
             # Create new taggings:
             new_tags.each do |tag|
-              taggings.create!(:tag_id => tag.id, :context => context.to_s, :tagger => owner, :taggable => self)
+              taggings.create!(:tag_id => tag.id, :context => context.to_s, :tagger => owner, :taggable => self, :organization_id => organization_id)
             end
           end
         end

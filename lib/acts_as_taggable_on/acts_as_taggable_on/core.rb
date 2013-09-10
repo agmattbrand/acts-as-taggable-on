@@ -92,6 +92,8 @@ module ActsAsTaggableOn::Taggable
         having = []
         select_clause = []
 
+        organization_id = options.delete(:organization_id)
+
         context = options.delete(:on)
         owned_by = options.delete(:owned_by)
         alias_base_name = undecorated_table_name.gsub('.','_')
@@ -105,6 +107,7 @@ module ActsAsTaggableOn::Taggable
           end
 
           conditions << "#{table_name}.#{primary_key} NOT IN (SELECT #{ActsAsTaggableOn::Tagging.table_name}.taggable_id FROM #{ActsAsTaggableOn::Tagging.table_name} JOIN #{ActsAsTaggableOn::Tag.table_name} ON #{ActsAsTaggableOn::Tagging.table_name}.tag_id = #{ActsAsTaggableOn::Tag.table_name}.#{ActsAsTaggableOn::Tag.primary_key} AND (#{tags_conditions}) WHERE #{ActsAsTaggableOn::Tagging.table_name}.taggable_type = #{quote_value(base_class.name)})"
+          conditions << sanitize_sql(["#{taggings_alias}.organization_id = ?", organization_id])
 
           if owned_by
             joins <<  "JOIN #{ActsAsTaggableOn::Tagging.table_name}" +
@@ -232,6 +235,10 @@ module ActsAsTaggableOn::Taggable
 
       def add_custom_context(value)
         custom_contexts << value.to_s unless custom_contexts.include?(value.to_s) or self.class.tag_types.map(&:to_s).include?(value.to_s)
+      end
+
+      def add_organization_id(value)
+        organization_id << value
       end
 
       def cached_tag_list_on(context)
