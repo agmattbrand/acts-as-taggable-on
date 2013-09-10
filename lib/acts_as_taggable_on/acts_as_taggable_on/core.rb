@@ -238,6 +238,7 @@ module ActsAsTaggableOn::Taggable
       end
 
       def add_organization_id(value)
+        puts "----- #{value} -----"
         organization_id << value
       end
 
